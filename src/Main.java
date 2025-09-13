@@ -2,7 +2,7 @@ import java.util.*;
 public class Main {
     public static void main(String[] args){
         Scanner sc=new Scanner(System.in);
-        final int pin=9988;
+        final int pin=1984;
         int attempts=0;
         boolean authorized=false;
         while(attempts<3){
