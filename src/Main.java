@@ -24,7 +24,7 @@ public class Main {
         }
 
         boolean exit=false;
-        ATM atm=new ATM(1000.00);
+        ATM atm=new ATM(500.00);
         System.out.println("LOGIN SUCCESSFULL! WELCOME TO ATM");
         while(!exit){
             System.out.println("CHOOSE AN OPTION");
