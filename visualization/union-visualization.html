@@ -741,6 +741,8 @@
             document.getElementById('progressFill').style.width = '0%';
             highlightCode(null);
             renderArrays();
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
         }
 
         function toggleAuto() {
