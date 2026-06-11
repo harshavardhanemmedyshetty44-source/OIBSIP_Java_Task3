@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Union of Two Sorted Arrays - Algorithm Visualization</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Arrays Section */
+        .arrays-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .array-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .array-label {
+            font-weight: 700;
+            font-size: 1rem;
+            min-width: 60px;
+            color: #aaa;
+        }
+
+        .array-container {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .cell {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.4s ease;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .cell-arr1 {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        .cell-arr2 {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .cell-union {
+            background: rgba(251, 191, 36, 0.15);
+            border-color: rgba(251, 191, 36, 0.3);
+            color: #fcd34d;
+        }
+
+        .cell.active {
+            transform: scale(1.15);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .cell-arr1.active {
+            background: rgba(59, 130, 246, 0.5);
+            border-color: #3b82f6;
+        }
+
+        .cell-arr2.active {
+            background: rgba(16, 185, 129, 0.5);
+            border-color: #10b981;
+        }
+
+        .cell.processed {
+            opacity: 0.35;
+        }
+
+        .cell.just-added {
+            animation: popIn 0.4s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .pointer {
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .pointer-i {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .pointer-j {
+            background: #10b981;
+            color: #fff;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+        }
+
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+        }
+
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+
+        .speed-control input[type="range"] {
+            width: 100px;
+            accent-color: #3b82f6;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .info-panel { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .panel h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        /* Step description */
+        .step-description {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            min-height: 50px;
+        }
+
+        .step-description .highlight-blue { color: #60a5fa; font-weight: 700; }
+        .step-description .highlight-green { color: #34d399; font-weight: 700; }
+        .step-description .highlight-yellow { color: #fbbf24; font-weight: 700; }
+
+        /* Code panel */
+        .code-panel {
+            font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+            font-size: 0.78rem;
+            line-height: 1.7;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .code-line {
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: pre;
+            transition: background 0.3s ease;
+        }
+
+        .code-line.active-line {
+            background: rgba(251, 191, 36, 0.15);
+            border-left: 3px solid #fbbf24;
+        }
+
+        .code-line .line-num {
+            display: inline-block;
+            width: 28px;
+            color: #555;
+            text-align: right;
+            margin-right: 12px;
+            user-select: none;
+        }
+
+        .code-line .kw { color: #c792ea; }
+        .code-line .type { color: #82aaff; }
+        .code-line .str { color: #c3e88d; }
+        .code-line .num { color: #f78c6c; }
+        .code-line .comment { color: #546e7a; font-style: italic; }
+        .code-line .method { color: #ffcb6b; }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-blue .stat-value { color: #60a5fa; }
+        .stat-green .stat-value { color: #34d399; }
+        .stat-yellow .stat-value { color: #fbbf24; }
+        .stat-purple .stat-value { color: #c084fc; }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
+
+        .legend-dot.blue { background: rgba(59, 130, 246, 0.5); border: 2px solid #3b82f6; }
+        .legend-dot.green { background: rgba(16, 185, 129, 0.5); border: 2px solid #10b981; }
+        .legend-dot.yellow { background: rgba(251, 191, 36, 0.5); border: 2px solid #fbbf24; }
+        .legend-dot.dim { background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15); }
+
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        /* Complexity Badge */
+        .complexity-badge {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .complexity-badge span {
+            background: rgba(255,255,255,0.08);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin: 0 4px;
+        }
+
+        .complexity-badge .tc { color: #60a5fa; }
+        .complexity-badge .sc { color: #34d399; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Union of Two Sorted Arrays</h1>
+        <p class="subtitle">Two-Pointer Technique - Step-by-Step Visualization</p>
+
+        <div class="complexity-badge">
+            <span class="tc">Time: O(n + m)</span>
+            <span class="sc">Space: O(n + m)</span>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot blue"></div> arr1 (pointer i)</div>
+            <div class="legend-item"><div class="legend-dot green"></div> arr2 (pointer j)</div>
+            <div class="legend-item"><div class="legend-dot yellow"></div> Union result</div>
+            <div class="legend-item"><div class="legend-dot dim"></div> Already processed</div>
+        </div>
+
+        <div class="arrays-section">
+            <div class="array-row">
+                <div class="array-label" style="color:#60a5fa;">arr1:</div>
+                <div class="array-container" id="arr1Container"></div>
+            </div>
+            <div class="array-row">
+                <div class="array-label" style="color:#34d399;">arr2:</div>
+                <div class="array-container" id="arr2Container"></div>
+            </div>
+            <div class="array-row">
+                <div class="array-label" style="color:#fbbf24;">Union:</div>
+                <div class="array-container" id="unionContainer"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-secondary" id="resetBtn" onclick="reset()">Reset</button>
+            <button class="btn btn-primary" id="prevBtn" onclick="prevStep()" disabled>Prev</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next Step</button>
+            <button class="btn btn-success" id="autoBtn" onclick="toggleAuto()">Auto Play</button>
+            <div class="speed-control">
+                <label>Speed:</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5x</span>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="panel">
+                <h3>Current Step</h3>
+                <div class="step-description" id="stepDescription">
+                    Click <strong>"Next Step"</strong> or <strong>"Auto Play"</strong> to start the visualization.
+                    <br><br>
+                    The algorithm uses two pointers (i, j) to traverse both sorted arrays simultaneously, 
+                    merging them into a union without duplicates.
+                </div>
+                <div class="stats" style="margin-top: 14px;">
+                    <div class="stat stat-blue">
+                        <div class="stat-value" id="statI">0</div>
+                        <div class="stat-label">i (arr1)</div>
+                    </div>
+                    <div class="stat stat-green">
+                        <div class="stat-value" id="statJ">0</div>
+                        <div class="stat-label">j (arr2)</div>
+                    </div>
+                    <div class="stat stat-yellow">
+                        <div class="stat-value" id="statUnion">0</div>
+                        <div class="stat-label">Union size</div>
+                    </div>
+                    <div class="stat stat-purple">
+                        <div class="stat-value" id="statStep">0</div>
+                        <div class="stat-label">Step</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Java Code</h3>
+                <div class="code-panel" id="codePanel"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const arr1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        const arr2 = [2, 3, 4, 4, 5, 11, 12];
+
+        // Pre-compute all steps
+        function computeSteps() {
+            const steps = [];
+            const union = [];
+            let i = 0, j = 0;
+            const n = arr1.length, m = arr2.length;
+
+            steps.push({
+                i, j, union: [...union],
+                desc: `Initialize: <span class="highlight-blue">i = 0</span>, <span class="highlight-green">j = 0</span>. Both pointers start at the beginning of their arrays.`,
+                lines: [3, 4],
+                phase: 'init'
+            });
+
+            while (i < n && j < m) {
+                if (arr1[i] < arr2[j]) {
+                    const added = union.length === 0 || union[union.length - 1] !== arr1[i];
+                    if (added) union.push(arr1[i]);
+                    steps.push({
+                        i, j, union: [...union],
+                        desc: `<span class="highlight-blue">arr1[${i}] = ${arr1[i]}</span> < <span class="highlight-green">arr2[${j}] = ${arr2[j]}</span>. ` +
+                              (added 
+                                ? `<span class="highlight-yellow">${arr1[i]}</span> added to Union.` 
+                                : `${arr1[i]} is a duplicate, skipped.`) +
+                              ` Move <span class="highlight-blue">i++</span>.`,
+                        lines: added ? [8, 10, 11, 12] : [8, 12],
+                        compare: 'arr1_smaller',
+                        added: added ? arr1[i] : null,
+                        moveI: true
+                    });
+                    i++;
+                } else if (arr2[j] < arr1[i]) {
+                    const added = union.length === 0 || union[union.length - 1] !== arr2[j];
+                    if (added) union.push(arr2[j]);
+                    steps.push({
+                        i, j, union: [...union],
+                        desc: `<span class="highlight-green">arr2[${j}] = ${arr2[j]}</span> < <span class="highlight-blue">arr1[${i}] = ${arr1[i]}</span>. ` +
+                              (added 
+                                ? `<span class="highlight-yellow">${arr2[j]}</span> added to Union.` 
+                                : `${arr2[j]} is a duplicate, skipped.`) +
+                              ` Move <span class="highlight-green">j++</span>.`,
+                        lines: added ? [14, 16, 17, 18] : [14, 18],
+                        compare: 'arr2_smaller',
+                        added: added ? arr2[j] : null,
+                        moveJ: true
+                    });
+                    j++;
+                } else {
+                    const added = union.length === 0 || union[union.length - 1] !== arr1[i];
+                    if (added) union.push(arr1[i]);
+                    steps.push({
+                        i, j, union: [...union],
+                        desc: `<span class="highlight-blue">arr1[${i}] = ${arr1[i]}</span> == <span class="highlight-green">arr2[${j}] = ${arr2[j]}</span> (equal!). ` +
+                              (added 
+                                ? `<span class="highlight-yellow">${arr1[i]}</span> added to Union once.` 
+                                : `${arr1[i]} is a duplicate, skipped.`) +
+                              ` Move <span class="highlight-blue">i++</span> and <span class="highlight-green">j++</span>.`,
+                        lines: added ? [21, 23, 24, 25] : [21, 25],
+                        compare: 'equal',
+                        added: added ? arr1[i] : null,
+                        moveI: true, moveJ: true
+                    });
+                    i++; j++;
+                }
+            }
+
+            while (i < n) {
+                const added = union.length === 0 || union[union.length - 1] !== arr1[i];
+                if (added) union.push(arr1[i]);
+                steps.push({
+                    i, j, union: [...union],
+                    desc: `Remaining in arr1: <span class="highlight-blue">arr1[${i}] = ${arr1[i]}</span>. ` +
+                          (added 
+                            ? `<span class="highlight-yellow">${arr1[i]}</span> added to Union.` 
+                            : `${arr1[i]} is a duplicate, skipped.`) +
+                          ` Move <span class="highlight-blue">i++</span>.`,
+                    lines: added ? [29, 30, 31, 32] : [29, 32],
+                    phase: 'remaining_arr1',
+                    added: added ? arr1[i] : null,
+                    moveI: true
+                });
+                i++;
+            }
+
+            while (j < m) {
+                const added = union.length === 0 || union[union.length - 1] !== arr2[j];
+                if (added) union.push(arr2[j]);
+                steps.push({
+                    i, j, union: [...union],
+                    desc: `Remaining in arr2: <span class="highlight-green">arr2[${j}] = ${arr2[j]}</span>. ` +
+                          (added 
+                            ? `<span class="highlight-yellow">${arr2[j]}</span> added to Union.` 
+                            : `${arr2[j]} is a duplicate, skipped.`) +
+                          ` Move <span class="highlight-green">j++</span>.`,
+                    lines: added ? [36, 37, 38, 39] : [36, 39],
+                    phase: 'remaining_arr2',
+                    added: added ? arr2[j] : null,
+                    moveJ: true
+                });
+                j++;
+            }
+
+            steps.push({
+                i, j, union: [...union],
+                desc: `Done! The union contains <span class="highlight-yellow">${union.length}</span> elements: <span class="highlight-yellow">[${union.join(', ')}]</span>. All elements from both arrays, without duplicates, in sorted order.`,
+                lines: [42],
+                phase: 'done'
+            });
+
+            return steps;
+        }
+
+        const steps = computeSteps();
+        let currentStep = -1;
+        let autoPlaying = false;
+        let autoTimer = null;
+
+        // Code lines for display
+        const codeLines = [
+            { n: 1,  code: `<span class="kw">public</span> <span class="type">List&lt;Integer&gt;</span> <span class="method">findUnion</span>(<span class="type">int[]</span> arr1, <span class="type">int[]</span> arr2, <span class="type">int</span> n, <span class="type">int</span> m) {` },
+            { n: 2,  code: `    <span class="type">List&lt;Integer&gt;</span> Union = <span class="kw">new</span> <span class="type">ArrayList&lt;&gt;</span>();` },
+            { n: 3,  code: `    <span class="type">int</span> i = <span class="num">0</span>, j = <span class="num">0</span>;` },
+            { n: 4,  code: `    <span class="comment">// Initialize pointers i=0, j=0</span>` },
+            { n: 5,  code: `` },
+            { n: 6,  code: `    <span class="kw">while</span> (i < n && j < m) {` },
+            { n: 7,  code: `` },
+            { n: 8,  code: `        <span class="kw">if</span> (arr1[i] < arr2[j]) {` },
+            { n: 9,  code: `            <span class="comment">// arr1[i] is smaller</span>` },
+            { n: 10, code: `            <span class="kw">if</span> (Union.isEmpty() || Union.getLast() != arr1[i])` },
+            { n: 11, code: `                Union.<span class="method">add</span>(arr1[i]);` },
+            { n: 12, code: `            i++;` },
+            { n: 13, code: `` },
+            { n: 14, code: `        } <span class="kw">else if</span> (arr2[j] < arr1[i]) {` },
+            { n: 15, code: `            <span class="comment">// arr2[j] is smaller</span>` },
+            { n: 16, code: `            <span class="kw">if</span> (Union.isEmpty() || Union.getLast() != arr2[j])` },
+            { n: 17, code: `                Union.<span class="method">add</span>(arr2[j]);` },
+            { n: 18, code: `            j++;` },
+            { n: 19, code: `` },
+            { n: 20, code: `        } <span class="kw">else</span> {` },
+            { n: 21, code: `            <span class="comment">// Elements are equal</span>` },
+            { n: 22, code: `            <span class="kw">if</span> (Union.isEmpty() || Union.getLast() != arr1[i])` },
+            { n: 23, code: `                Union.<span class="method">add</span>(arr1[i]);` },
+            { n: 24, code: `            i++;` },
+            { n: 25, code: `            j++;` },
+            { n: 26, code: `        }` },
+            { n: 27, code: `    }` },
+            { n: 28, code: `` },
+            { n: 29, code: `    <span class="comment">// Append remaining from arr1</span>` },
+            { n: 30, code: `    <span class="kw">while</span> (i < n) {` },
+            { n: 31, code: `        <span class="kw">if</span> (!dup) Union.<span class="method">add</span>(arr1[i]);` },
+            { n: 32, code: `        i++;` },
+            { n: 33, code: `    }` },
+            { n: 34, code: `` },
+            { n: 35, code: `    <span class="comment">// Append remaining from arr2</span>` },
+            { n: 36, code: `    <span class="kw">while</span> (j < m) {` },
+            { n: 37, code: `        <span class="kw">if</span> (!dup) Union.<span class="method">add</span>(arr2[j]);` },
+            { n: 38, code: `        j++;` },
+            { n: 39, code: `    }` },
+            { n: 40, code: `` },
+            { n: 41, code: `    <span class="kw">return</span> Union;` },
+            { n: 42, code: `}` },
+        ];
+
+        function initCodePanel() {
+            const panel = document.getElementById('codePanel');
+            panel.innerHTML = codeLines.map(l =>
+                `<div class="code-line" data-line="${l.n}"><span class="line-num">${l.n}</span>${l.code}</div>`
+            ).join('');
+        }
+
+        function renderArrays(step) {
+            const s = step !== undefined ? steps[step] : null;
+            const iPos = s ? s.i : 0;
+            const jPos = s ? s.j : 0;
+            const unionArr = s ? s.union : [];
+
+            // arr1
+            const c1 = document.getElementById('arr1Container');
+            c1.innerHTML = arr1.map((v, idx) => {
+                let cls = 'cell cell-arr1';
+                if (s && idx < iPos) cls += ' processed';
+                if (s && idx === iPos && iPos < arr1.length) cls += ' active';
+                const pointer = (s && idx === iPos && iPos < arr1.length) 
+                    ? `<div class="pointer pointer-i">i=${iPos}</div>` : '';
+                return `<div class="${cls}">${pointer}${v}</div>`;
+            }).join('');
+
+            // arr2
+            const c2 = document.getElementById('arr2Container');
+            c2.innerHTML = arr2.map((v, idx) => {
+                let cls = 'cell cell-arr2';
+                if (s && idx < jPos) cls += ' processed';
+                if (s && idx === jPos && jPos < arr2.length) cls += ' active';
+                const pointer = (s && idx === jPos && jPos < arr2.length) 
+                    ? `<div class="pointer pointer-j">j=${jPos}</div>` : '';
+                return `<div class="${cls}">${pointer}${v}</div>`;
+            }).join('');
+
+            // Union
+            const cu = document.getElementById('unionContainer');
+            cu.innerHTML = unionArr.map((v, idx) => {
+                let cls = 'cell cell-union';
+                if (s && idx === unionArr.length - 1 && s.added !== null && s.added !== undefined) {
+                    cls += ' just-added';
+                }
+                return `<div class="${cls}">${v}</div>`;
+            }).join('');
+
+            if (unionArr.length === 0 && !s) {
+                cu.innerHTML = '<span style="color:#555; font-style:italic;">Empty</span>';
+            } else if (unionArr.length === 0) {
+                cu.innerHTML = '<span style="color:#555; font-style:italic;">Empty</span>';
+            }
+        }
+
+        function highlightCode(lineNums) {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            if (!lineNums) return;
+            lineNums.forEach(n => {
+                const el = document.querySelector(`.code-line[data-line="${n}"]`);
+                if (el) {
+                    el.classList.add('active-line');
+                    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        }
+
+        function updateUI() {
+            const s = currentStep >= 0 ? steps[currentStep] : null;
+
+            renderArrays(currentStep >= 0 ? currentStep : undefined);
+
+            if (s) {
+                document.getElementById('stepDescription').innerHTML = s.desc;
+                highlightCode(s.lines);
+                document.getElementById('statI').textContent = s.i;
+                document.getElementById('statJ').textContent = s.j;
+                document.getElementById('statUnion').textContent = s.union.length;
+                document.getElementById('statStep').textContent = currentStep + 1;
+            } else {
+                highlightCode(null);
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+
+            const pct = steps.length > 1 ? ((currentStep + 1) / steps.length) * 100 : 0;
+            document.getElementById('progressFill').style.width = pct + '%';
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateUI();
+            }
+            if (currentStep >= steps.length - 1 && autoPlaying) {
+                toggleAuto();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        }
+
+        function reset() {
+            if (autoPlaying) toggleAuto();
+            currentStep = -1;
+            document.getElementById('stepDescription').innerHTML =
+                `Click <strong>"Next Step"</strong> or <strong>"Auto Play"</strong> to start the visualization.
+                <br><br>The algorithm uses two pointers (i, j) to traverse both sorted arrays simultaneously,
+                merging them into a union without duplicates.`;
+            document.getElementById('statI').textContent = '0';
+            document.getElementById('statJ').textContent = '0';
+            document.getElementById('statUnion').textContent = '0';
+            document.getElementById('statStep').textContent = '0';
+            document.getElementById('progressFill').style.width = '0%';
+            highlightCode(null);
+            renderArrays();
+        }
+
+        function toggleAuto() {
+            autoPlaying = !autoPlaying;
+            const btn = document.getElementById('autoBtn');
+            if (autoPlaying) {
+                btn.textContent = 'Pause';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-secondary');
+                runAuto();
+            } else {
+                btn.textContent = 'Auto Play';
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-success');
+                clearTimeout(autoTimer);
+            }
+        }
+
+        function runAuto() {
+            if (!autoPlaying) return;
+            nextStep();
+            if (currentStep < steps.length - 1) {
+                const speed = document.getElementById('speedSlider').value;
+                const delay = 1500 / speed;
+                autoTimer = setTimeout(runAuto, delay);
+            }
+        }
+
+        document.getElementById('speedSlider').addEventListener('input', function () {
+            document.getElementById('speedLabel').textContent = this.value + 'x';
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextStep(); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
+            if (e.key === 'r' || e.key === 'R') { reset(); }
+            if (e.key === 'p' || e.key === 'P') { toggleAuto(); }
+        });
+
+        // Init
+        initCodePanel();
+        renderArrays();
+    </script>
+</body>
+</html>
